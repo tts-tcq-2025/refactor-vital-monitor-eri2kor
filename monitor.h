@@ -1,32 +1,22 @@
-#pragma once
+#ifndef MONITOR_H
+#define MONITOR_H
+
 #include <string>
-#include <vector>
 
-// -------------------- Data Types --------------------
-enum class BreachType { LOW, HIGH, NORMAL, WARNING_LOW, WARNING_HIGH };
-
-struct Limit {
-    float min{};
-    float max{};
-};
-
-struct Vital {
+struct VitalSign {
     std::string name;
-    float value{};
-    Limit limit{};
+    double value;
+    double lowerLimit;
+    double upperLimit;
 };
 
-// -------------------- Pure Functions --------------------
-// Check vital against limit and warning tolerance
-BreachType checkLimitWithWarning(const float value, const Limit& limit, const float tolerance = 0.015f);
+enum class VitalStatus { NORMAL, WARNING, ALERT };
 
-// Convert BreachType enum to string
-std::string breachToString(const BreachType breach);
+// Pure functions
+VitalStatus checkVital(double value, double lower, double upper, double warningTolerance);
+double calculateWarningTolerance(double upper);
 
-// -------------------- I/O Functions --------------------
-// Handle alert printing and blinking
-void handleAlert(const Vital& v, const BreachType breach);
+// I/O functions
+void displayStatus(const VitalSign& vital, VitalStatus status);
 
-// -------------------- Monitoring --------------------
-// Returns 1 if all vitals are normal/warning, 0 if any LOW/HIGH
-int vitalsOk(const std::vector<Vital>& vitals);
+#endif // MONITOR_H
