@@ -18,14 +18,14 @@ struct Vital {
 
 // -------------------- Pure Functions --------------------
 // Check vital against limit and warning tolerance
-BreachType checkLimitWithWarning(float value, const Limit& limit, float tolerance = 0.015f);
+BreachType checkLimitWithWarning(const float value, const Limit& limit, float tolerance = 0.015f);
 
 // Convert BreachType enum to human-readable string
-std::string breachToString(BreachType breach);
+std::string breachToString(const BreachType breach);
 
 // -------------------- I/O Functions --------------------
 // Handle alert printing and blinking
-void handleAlert(const Vital& v, BreachType breach);
+void handleAlert(const Vital& v, const BreachType breach);
 
 // -------------------- Monitoring --------------------
 // Returns 1 if all vitals are normal/warning, 0 if any LOW/HIGH
