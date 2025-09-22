@@ -2,7 +2,7 @@
 #include <iostream>
 
 int main() {
-    // Sample adult vitals
+    // Sample vitals
     VitalSign vitals[] = {
         {"Body Temperature (°F)", 101.0, 95.0, 102.0},
         {"Pulse Rate (bpm)", 98, 60, 100},
