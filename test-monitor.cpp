@@ -48,11 +48,11 @@ TEST_P(MonitorWarningTest, DetectsWarningRanges) {
 INSTANTIATE_TEST_SUITE_P(
     WarningCases, MonitorWarningTest,
     ::testing::Values(
-        WarningCase{95.5f, 72.0f, 98.0f},    // Temp lower warning
-        WarningCase{100.5f, 72.0f, 98.0f},   // Temp upper warning
-        WarningCase{98.6f, 61.0f, 98.0f},    // Pulse lower warning
-        WarningCase{98.6f, 99.0f, 98.0f},    // Pulse upper warning
-        WarningCase{98.6f, 72.0f, 90.5f},    // SPO2 lower warning
-        WarningCase{98.6f, 72.0f, 100.0f}    // SPO2 upper warning
+        WarningCase{95.5f, 72.0f, 98.0f},
+        WarningCase{100.5f, 72.0f, 98.0f},
+        WarningCase{98.6f, 61.0f, 98.0f},
+        WarningCase{98.6f, 99.0f, 98.0f},
+        WarningCase{98.6f, 72.0f, 90.5f},
+        WarningCase{98.6f, 72.0f, 100.0f}
     )
 );
