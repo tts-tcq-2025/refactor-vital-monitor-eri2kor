@@ -8,7 +8,7 @@ namespace {
 // -------------------- Constants --------------------
 constexpr float DEFAULT_WARNING_TOLERANCE = 0.015f;
 
-// -------------------- Alert Helpers --------------------
+// -------------------- Blink Helper --------------------
 void blinkPattern(int cycles = 6, int delaySec = 1) {
     using namespace std::chrono_literals;
     for (int i = 0; i < cycles; ++i) {
@@ -42,7 +42,7 @@ std::string breachToString(BreachType breach) {
     }
 }
 
-// -------------------- Alert I/O --------------------
+// -------------------- I/O Functions --------------------
 void handleAlert(const Vital& v, BreachType breach) {
     std::cout << v.name << " is " << breachToString(breach) << "!\n";
     if (breach == BreachType::LOW || breach == BreachType::HIGH)
@@ -51,7 +51,7 @@ void handleAlert(const Vital& v, BreachType breach) {
 
 // -------------------- Monitoring --------------------
 int vitalsOk(const std::vector<Vital>& vitals) {
-    int allOk = 1; // assume OK
+    int allOk = 1;
     for (const auto& v : vitals) {
         const auto breach = checkLimitWithWarning(v.value, v.limit, DEFAULT_WARNING_TOLERANCE);
         if (breach != BreachType::NORMAL) handleAlert(v, breach);
