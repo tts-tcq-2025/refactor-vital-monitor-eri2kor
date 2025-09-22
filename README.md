@@ -47,7 +47,7 @@ Shorten the Semantic distance
 - Object oriented to encapsulate state with actions
 - Aspect oriented to capture repeating aspects
 
-  Extension 1: Early Warning
+## Extension 1: Early Warning
 
 Care-givers need early warnings to take action, in addition to the alarm that you print after the limit is breached. Introduce a 'warning' level with a tolerance of 1.5% of the upper-limit.
 
