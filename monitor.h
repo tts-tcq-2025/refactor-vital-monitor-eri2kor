@@ -16,9 +16,9 @@ struct Vital {
 };
 
 // Pure functions
-BreachType checkLimit(float value, const Limit& limit);
 BreachType checkLimitWithWarning(float value, const Limit& limit, float tolerance = 0.015f);
 std::string breachToString(BreachType breach);
+void handleAlert(const Vital& v, BreachType breach);
 
 // Monitoring function
 int vitalsOk(const std::vector<Vital>& vitals);
