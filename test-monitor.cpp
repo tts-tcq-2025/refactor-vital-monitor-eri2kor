@@ -1,18 +1,18 @@
 #include <gtest/gtest.h>
-#include "monitor.h"
+#include "./monitor.h"
 
 // -------------------- Helpers --------------------
 std::vector<Vital> makeVitals(float temp, float pulse, float spo2) {
     return {
-        {"Temperature", temp, {95.0f, 102.0f}},
-        {"Pulse Rate", pulse, {60.0f, 100.0f}},
-        {"Oxygen Saturation", spo2, {90.0f, 100.0f}}
+        {"Temperature", temp, {95, 102}},
+        {"Pulse Rate", pulse, {60, 100}},
+        {"Oxygen Saturation", spo2, {90, 100}}
     };
 }
 
 // -------------------- Normal Vitals --------------------
 TEST(Monitor, AllVitalsNormal) {
-    ASSERT_TRUE(vitalsOk(makeVitals(98.6f, 72.0f, 98.0f)));
+    ASSERT_TRUE(vitalsOk(makeVitals(98.6, 72, 98)));
 }
 
 // -------------------- Abnormal Vitals (Alarms) --------------------
@@ -20,19 +20,19 @@ struct AbnormalCase { float temp, pulse, spo2; };
 class MonitorAbnormalTest : public ::testing::TestWithParam<AbnormalCase> {};
 
 TEST_P(MonitorAbnormalTest, DetectsOutOfRange) {
-    const auto c = GetParam();
+    auto c = GetParam();
     ASSERT_FALSE(vitalsOk(makeVitals(c.temp, c.pulse, c.spo2)));
 }
 
 INSTANTIATE_TEST_SUITE_P(
     AbnormalCases, MonitorAbnormalTest,
     ::testing::Values(
-        AbnormalCase{104.0f, 72.0f, 98.0f},
-        AbnormalCase{94.0f, 72.0f, 98.0f},
-        AbnormalCase{98.6f, 120.0f, 98.0f},
-        AbnormalCase{98.6f, 50.0f, 98.0f},
-        AbnormalCase{98.6f, 72.0f, 85.0f},
-        AbnormalCase{104.0f, 120.0f, 85.0f}
+        AbnormalCase{104, 72, 98},   // High temp
+        AbnormalCase{94, 72, 98},    // Low temp
+        AbnormalCase{98.6, 120, 98}, // High pulse
+        AbnormalCase{98.6, 50, 98},  // Low pulse
+        AbnormalCase{98.6, 72, 85},  // Low spo2
+        AbnormalCase{104, 120, 85}   // Multiple abnormal
     )
 );
 
@@ -41,18 +41,19 @@ struct WarningCase { float temp, pulse, spo2; };
 class MonitorWarningTest : public ::testing::TestWithParam<WarningCase> {};
 
 TEST_P(MonitorWarningTest, DetectsWarningRanges) {
-    const auto c = GetParam();
+    auto c = GetParam();
+    // Warnings should NOT fail vitalsOk
     ASSERT_TRUE(vitalsOk(makeVitals(c.temp, c.pulse, c.spo2)));
 }
 
 INSTANTIATE_TEST_SUITE_P(
     WarningCases, MonitorWarningTest,
     ::testing::Values(
-        WarningCase{95.5f, 72.0f, 98.0f},    // Temp near lower warning
-        WarningCase{100.5f, 72.0f, 98.0f},   // Temp near upper warning
-        WarningCase{98.6f, 61.0f, 98.0f},    // Pulse near lower warning
-        WarningCase{98.6f, 99.0f, 98.0f},    // Pulse near upper warning
-        WarningCase{98.6f, 72.0f, 90.5f},    // SPO2 near lower warning
-        WarningCase{98.6f, 72.0f, 100.0f}    // SPO2 near upper warning
+        WarningCase{95 + 0.5, 72, 98},    // Temp near lower warning
+        WarningCase{102 - 1.5, 72, 98},   // Temp near upper warning
+        WarningCase{98.6, 60 + 1, 98},    // Pulse near lower warning
+        WarningCase{98.6, 100 - 1, 98},   // Pulse near upper warning
+        WarningCase{98.6, 72, 90 + 0.5},  // SPO2 near lower warning
+        WarningCase{98.6, 72, 100}        // SPO2 near upper warning
     )
 );
