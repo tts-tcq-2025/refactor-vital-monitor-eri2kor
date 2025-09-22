@@ -3,7 +3,6 @@
 #include <iostream>
 
 void testVitals() {
-    // Body Temperature
     double upperTemp = 102, lowerTemp = 95;
     double toleranceTemp = calculateWarningTolerance(upperTemp);
 
@@ -13,7 +12,6 @@ void testVitals() {
     assert(checkVital(94, lowerTemp, upperTemp, toleranceTemp) == VitalStatus::ALERT_LOW);
     assert(checkVital(103, lowerTemp, upperTemp, toleranceTemp) == VitalStatus::ALERT_HIGH);
 
-    // Pulse Rate
     double upperPulse = 100, lowerPulse = 60;
     double tolerancePulse = calculateWarningTolerance(upperPulse);
 
@@ -23,7 +21,6 @@ void testVitals() {
     assert(checkVital(59, lowerPulse, upperPulse, tolerancePulse) == VitalStatus::ALERT_LOW);
     assert(checkVital(101, lowerPulse, upperPulse, tolerancePulse) == VitalStatus::ALERT_HIGH);
 
-    // SpO2
     double upperSpO2 = 100, lowerSpO2 = 90;
     double toleranceSpO2 = calculateWarningTolerance(upperSpO2);
 
