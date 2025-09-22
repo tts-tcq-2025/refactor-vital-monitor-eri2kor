@@ -1,65 +1,39 @@
 #include <gtest/gtest.h>
 #include "./monitor.h"
 
+// Helper to build vitals vector
+std::vector<Vital> makeVitals(float temp, float pulse, float spo2) {
+    return {
+        {"Temperature", temp, {95, 102}},
+        {"Pulse Rate", pulse, {60, 100}},
+        {"Oxygen Saturation", spo2, {90, 100}}
+    };
+}
+
 TEST(Monitor, AllVitalsNormal) {
-  std::vector<Vital> vitals = {
-    {"Temperature", 98.6, {95, 102}},
-    {"Pulse Rate", 72, {60, 100}},
-    {"Oxygen Saturation", 98, {90, 100}}
-  };
-  ASSERT_TRUE(vitalsOk(vitals));
+    ASSERT_TRUE(vitalsOk(makeVitals(98.6, 72, 98)));
 }
 
-TEST(Monitor, TemperatureTooHigh) {
-  std::vector<Vital> vitals = {
-    {"Temperature", 104, {95, 102}},
-    {"Pulse Rate", 72, {60, 100}},
-    {"Oxygen Saturation", 98, {90, 100}}
-  };
-  ASSERT_FALSE(vitalsOk(vitals));
+// Table-driven abnormal cases
+struct AbnormalCase {
+    float temp, pulse, spo2;
+};
+
+class MonitorAbnormalTest : public ::testing::TestWithParam<AbnormalCase> {};
+
+TEST_P(MonitorAbnormalTest, DetectsOutOfRange) {
+    auto c = GetParam();
+    ASSERT_FALSE(vitalsOk(makeVitals(c.temp, c.pulse, c.spo2)));
 }
 
-TEST(Monitor, TemperatureTooLow) {
-  std::vector<Vital> vitals = {
-    {"Temperature", 94, {95, 102}},
-    {"Pulse Rate", 72, {60, 100}},
-    {"Oxygen Saturation", 98, {90, 100}}
-  };
-  ASSERT_FALSE(vitalsOk(vitals));
-}
-
-TEST(Monitor, PulseRateTooHigh) {
-  std::vector<Vital> vitals = {
-    {"Temperature", 98.6, {95, 102}},
-    {"Pulse Rate", 120, {60, 100}},
-    {"Oxygen Saturation", 98, {90, 100}}
-  };
-  ASSERT_FALSE(vitalsOk(vitals));
-}
-
-TEST(Monitor, PulseRateTooLow) {
-  std::vector<Vital> vitals = {
-    {"Temperature", 98.6, {95, 102}},
-    {"Pulse Rate", 50, {60, 100}},
-    {"Oxygen Saturation", 98, {90, 100}}
-  };
-  ASSERT_FALSE(vitalsOk(vitals));
-}
-
-TEST(Monitor, OxygenTooLow) {
-  std::vector<Vital> vitals = {
-    {"Temperature", 98.6, {95, 102}},
-    {"Pulse Rate", 72, {60, 100}},
-    {"Oxygen Saturation", 85, {90, 100}}
-  };
-  ASSERT_FALSE(vitalsOk(vitals));
-}
-
-TEST(Monitor, MultipleAbnormal) {
-  std::vector<Vital> vitals = {
-    {"Temperature", 104, {95, 102}},
-    {"Pulse Rate", 120, {60, 100}},
-    {"Oxygen Saturation", 85, {90, 100}}
-  };
-  ASSERT_FALSE(vitalsOk(vitals));
-}
+INSTANTIATE_TEST_SUITE_P(
+    AbnormalCases, MonitorAbnormalTest,
+    ::testing::Values(
+        AbnormalCase{104, 72, 98},   // High temp
+        AbnormalCase{94, 72, 98},    // Low temp
+        AbnormalCase{98.6, 120, 98}, // High pulse
+        AbnormalCase{98.6, 50, 98},  // Low pulse
+        AbnormalCase{98.6, 72, 85},  // Low spo2
+        AbnormalCase{104, 120, 85}   // Multiple abnormal
+    )
+);
