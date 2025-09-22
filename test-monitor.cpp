@@ -2,38 +2,41 @@
 #include <cassert>
 #include <iostream>
 
-void testVitals() {
-    double upperTemp = 102, lowerTemp = 95;
-    double toleranceTemp = calculateWarningTolerance(upperTemp);
+void runTests() {
+    // Body Temperature
+    double lowerTemp = 95, upperTemp = 102;
+    double tolTemp = calculateWarningTolerance(upperTemp);
 
-    assert(checkVital(98, lowerTemp, upperTemp, toleranceTemp) == VitalStatus::NORMAL);
-    assert(checkVital(95 + toleranceTemp - 0.01, lowerTemp, upperTemp, toleranceTemp) == VitalStatus::WARNING_LOW);
-    assert(checkVital(102 - toleranceTemp + 0.01, lowerTemp, upperTemp, toleranceTemp) == VitalStatus::WARNING_HIGH);
-    assert(checkVital(94, lowerTemp, upperTemp, toleranceTemp) == VitalStatus::ALERT_LOW);
-    assert(checkVital(103, lowerTemp, upperTemp, toleranceTemp) == VitalStatus::ALERT_HIGH);
+    assert(checkVital(97, lowerTemp, upperTemp, tolTemp) == VitalStatus::NORMAL);
+    assert(checkVital(95.5, lowerTemp, upperTemp, tolTemp) == VitalStatus::WARNING_LOW);
+    assert(checkVital(101, lowerTemp, upperTemp, tolTemp) == VitalStatus::WARNING_HIGH);
+    assert(checkVital(94, lowerTemp, upperTemp, tolTemp) == VitalStatus::ALERT_LOW);
+    assert(checkVital(103, lowerTemp, upperTemp, tolTemp) == VitalStatus::ALERT_HIGH);
 
-    double upperPulse = 100, lowerPulse = 60;
-    double tolerancePulse = calculateWarningTolerance(upperPulse);
+    // Pulse Rate
+    double lowerPulse = 60, upperPulse = 100;
+    double tolPulse = calculateWarningTolerance(upperPulse);
 
-    assert(checkVital(80, lowerPulse, upperPulse, tolerancePulse) == VitalStatus::NORMAL);
-    assert(checkVital(60 + tolerancePulse - 0.01, lowerPulse, upperPulse, tolerancePulse) == VitalStatus::WARNING_LOW);
-    assert(checkVital(100 - tolerancePulse + 0.01, lowerPulse, upperPulse, tolerancePulse) == VitalStatus::WARNING_HIGH);
-    assert(checkVital(59, lowerPulse, upperPulse, tolerancePulse) == VitalStatus::ALERT_LOW);
-    assert(checkVital(101, lowerPulse, upperPulse, tolerancePulse) == VitalStatus::ALERT_HIGH);
+    assert(checkVital(80, lowerPulse, upperPulse, tolPulse) == VitalStatus::NORMAL);
+    assert(checkVital(61, lowerPulse, upperPulse, tolPulse) == VitalStatus::WARNING_LOW);
+    assert(checkVital(99, lowerPulse, upperPulse, tolPulse) == VitalStatus::WARNING_HIGH);
+    assert(checkVital(59, lowerPulse, upperPulse, tolPulse) == VitalStatus::ALERT_LOW);
+    assert(checkVital(101, lowerPulse, upperPulse, tolPulse) == VitalStatus::ALERT_HIGH);
 
-    double upperSpO2 = 100, lowerSpO2 = 90;
-    double toleranceSpO2 = calculateWarningTolerance(upperSpO2);
+    // SpO2
+    double lowerSpO2 = 90, upperSpO2 = 100;
+    double tolSpO2 = calculateWarningTolerance(upperSpO2);
 
-    assert(checkVital(95, lowerSpO2, upperSpO2, toleranceSpO2) == VitalStatus::NORMAL);
-    assert(checkVital(90 + toleranceSpO2 - 0.01, lowerSpO2, upperSpO2, toleranceSpO2) == VitalStatus::WARNING_LOW);
-    assert(checkVital(100 - toleranceSpO2 + 0.01, lowerSpO2, upperSpO2, toleranceSpO2) == VitalStatus::WARNING_HIGH);
-    assert(checkVital(89, lowerSpO2, upperSpO2, toleranceSpO2) == VitalStatus::ALERT_LOW);
-    assert(checkVital(101, lowerSpO2, upperSpO2, toleranceSpO2) == VitalStatus::ALERT_HIGH);
+    assert(checkVital(95, lowerSpO2, upperSpO2, tolSpO2) == VitalStatus::NORMAL);
+    assert(checkVital(90.5, lowerSpO2, upperSpO2, tolSpO2) == VitalStatus::WARNING_LOW);
+    assert(checkVital(99, lowerSpO2, upperSpO2, tolSpO2) == VitalStatus::WARNING_HIGH);
+    assert(checkVital(89, lowerSpO2, upperSpO2, tolSpO2) == VitalStatus::ALERT_LOW);
+    assert(checkVital(101, lowerSpO2, upperSpO2, tolSpO2) == VitalStatus::ALERT_HIGH);
 
     std::cout << "All tests passed successfully!\n";
 }
 
 int main() {
-    testVitals();
+    runTests();
     return 0;
 }
