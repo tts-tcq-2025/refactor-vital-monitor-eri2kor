@@ -1,32 +1,34 @@
 #include "monitor.h"
 #include <iostream>
-#include <algorithm>
-
-// Corrected logic: simplified and safe
-VitalStatus checkVital(double value, double lower, double upper, double warningTolerance) {
-    double lowWarning = lower + warningTolerance;
-    double highWarning = upper - warningTolerance;
-
-    if (value < lower) return VitalStatus::ALERT_LOW;
-    if (value < lowWarning) return VitalStatus::WARNING_LOW;
-    if (value <= highWarning) return VitalStatus::NORMAL;
-    if (value <= upper) return VitalStatus::WARNING_HIGH;
-    return VitalStatus::ALERT_HIGH;
-}
 
 double calculateWarningTolerance(double upper) {
-    return upper * 0.015;
+    return upper * 0.015; // 1.5% of upper limit
+}
+
+VitalStatus checkVital(double value, double lower, double upper, double warningTolerance) {
+    if (value < lower) return VitalStatus::ALERT_LOW;
+    if (value < lower + warningTolerance) return VitalStatus::WARNING_LOW;
+    if (value > upper) return VitalStatus::ALERT_HIGH;
+    if (value > upper - warningTolerance) return VitalStatus::WARNING_HIGH;
+    return VitalStatus::NORMAL;
 }
 
 void displayStatus(const VitalSign& vital, VitalStatus status) {
-    static const char* messages[] = {
-        "ALERT: Below safe limit!",
-        "Warning: Approaching low limit",
-        "Normal",
-        "Warning: Approaching high limit",
-        "ALERT: Above safe limit!"
-    };
-
-    std::cout << vital.name << ": " << vital.value << " - "
-              << messages[static_cast<int>(status)] << "\n";
+    switch (status) {
+        case VitalStatus::NORMAL:
+            std::cout << vital.name << ": " << vital.value << " - Normal\n";
+            break;
+        case VitalStatus::WARNING_LOW:
+            std::cout << vital.name << ": " << vital.value << " - Warning: Approaching low limit\n";
+            break;
+        case VitalStatus::WARNING_HIGH:
+            std::cout << vital.name << ": " << vital.value << " - Warning: Approaching high limit\n";
+            break;
+        case VitalStatus::ALERT_LOW:
+            std::cout << vital.name << ": " << vital.value << " - ALERT: Below safe limit!\n";
+            break;
+        case VitalStatus::ALERT_HIGH:
+            std::cout << vital.name << ": " << vital.value << " - ALERT: Above safe limit!\n";
+            break;
+    }
 }
