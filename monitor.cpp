@@ -1,38 +1,34 @@
-#include "./monitor.h"
-#include <assert.h>
-#include <thread>
-#include <chrono>
+#include "monitor.h"
 #include <iostream>
-using std::cout, std::flush, std::this_thread::sleep_for, std::chrono::seconds;
 
-int vitalsOk(float temperature, float pulseRate, float spo2) {
-  if (temperature > 102 || temperature < 95) {
-    cout << "Temperature is critical!\n";
-    for (int i = 0; i < 6; i++) {
-      cout << "\r* " << flush;
-      sleep_for(seconds(1));
-      cout << "\r *" << flush;
-      sleep_for(seconds(1));
+double calculateWarningTolerance(double upper) {
+    return upper * 0.015; // 1.5% of upper limit
+}
+
+VitalStatus checkVital(double value, double lower, double upper, double warningTolerance) {
+    if (value < lower) return VitalStatus::ALERT_LOW;
+    if (value < lower + warningTolerance) return VitalStatus::WARNING_LOW;
+    if (value > upper) return VitalStatus::ALERT_HIGH;
+    if (value > upper - warningTolerance) return VitalStatus::WARNING_HIGH;
+    return VitalStatus::NORMAL;
+}
+
+void displayStatus(const VitalSign& vital, VitalStatus status) {
+    switch (status) {
+        case VitalStatus::NORMAL:
+            std::cout << vital.name << ": " << vital.value << " - Normal\n";
+            break;
+        case VitalStatus::WARNING_LOW:
+            std::cout << vital.name << ": " << vital.value << " - Warning: Approaching low limit\n";
+            break;
+        case VitalStatus::WARNING_HIGH:
+            std::cout << vital.name << ": " << vital.value << " - Warning: Approaching high limit\n";
+            break;
+        case VitalStatus::ALERT_LOW:
+            std::cout << vital.name << ": " << vital.value << " - ALERT: Below safe limit!\n";
+            break;
+        case VitalStatus::ALERT_HIGH:
+            std::cout << vital.name << ": " << vital.value << " - ALERT: Above safe limit!\n";
+            break;
     }
-    return 0;
-  } else if (pulseRate < 60 || pulseRate > 100) {
-    cout << "Pulse Rate is out of range!\n";
-    for (int i = 0; i < 6; i++) {
-      cout << "\r* " << flush;
-      sleep_for(seconds(1));
-      cout << "\r *" << flush;
-      sleep_for(seconds(1));
-    }
-    return 0;
-  } else if (spo2 < 90) {
-    cout << "Oxygen Saturation out of range!\n";
-    for (int i = 0; i < 6; i++) {
-      cout << "\r* " << flush;
-      sleep_for(seconds(1));
-      cout << "\r *" << flush;
-      sleep_for(seconds(1));
-    }
-    return 0;
-  }
-  return 1;
 }
