@@ -1,32 +1,24 @@
 #include "monitor.h"
 #include <iostream>
+#include <algorithm> // for std::clamp
 
-// Zero complexity logic using arithmetic comparison
+// Branchless status calculation
 VitalStatus checkVital(double value, double lower, double upper, double warningTolerance) {
     double lowWarningThreshold = lower + warningTolerance;
     double highWarningThreshold = upper - warningTolerance;
 
-    // Map value to status without branching
-    VitalStatus statuses[] = {
-        VitalStatus::ALERT_LOW,     // value < lower
-        VitalStatus::WARNING_LOW,   // lower <= value < lowWarningThreshold
-        VitalStatus::NORMAL,        // lowWarningThreshold <= value <= highWarningThreshold
-        VitalStatus::WARNING_HIGH,  // highWarningThreshold < value <= upper
-        VitalStatus::ALERT_HIGH     // value > upper
-    };
+    // Convert conditions to integers 0 or 1
+    int isLowAlert    = static_cast<int>(value < lower);
+    int isHighAlert   = static_cast<int>(value > upper);
+    int isLowWarning  = static_cast<int>(value >= lower && value < lowWarningThreshold);
+    int isHighWarning = static_cast<int>(value > highWarningThreshold && value <= upper);
 
-    // Compute index (0-4) without branching
-    int index = 2 // assume NORMAL
-        - (value < lower) 
-        + (value > upper) * 2
-        - (value >= lower && value < lowWarningThreshold)
-        + (value > highWarningThreshold && value <= upper);
+    // Index: 0=ALERT_LOW, 1=WARNING_LOW, 2=NORMAL, 3=WARNING_HIGH, 4=ALERT_HIGH
+    int index = 2 - isLowAlert + isHighAlert * 2 - isLowWarning + isHighWarning;
 
-    // clamp index to [0,4]
-    if (index < 0) index = 0;
-    if (index > 4) index = 4;
+    index = std::clamp(index, 0, 4); // ensure in valid range
 
-    return statuses[index];
+    return static_cast<VitalStatus>(index);
 }
 
 double calculateWarningTolerance(double upper) {
@@ -42,5 +34,6 @@ void displayStatus(const VitalSign& vital, VitalStatus status) {
         "ALERT: Above safe limit!"
     };
 
-    std::cout << vital.name << ": " << vital.value << " - " << messages[static_cast<int>(status)] << "\n";
+    std::cout << vital.name << ": " << vital.value << " - " 
+              << messages[static_cast<int>(status)] << "\n";
 }
