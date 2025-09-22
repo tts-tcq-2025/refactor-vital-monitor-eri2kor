@@ -1,58 +1,51 @@
-#include <gtest/gtest.h>
 #include "monitor.h"
+#include <cassert>
+#include <iostream>
 
-// -------------------- Helpers --------------------
-std::vector<Vital> makeVitals(const float temp, const float pulse, const float spo2) {
-    return {
-        {"Temperature", temp, {95.0f, 102.0f}},
-        {"Pulse Rate", pulse, {60.0f, 100.0f}},
-        {"Oxygen Saturation", spo2, {90.0f, 100.0f}}
-    };
+void testVitals() {
+    // Body temperature tests
+    double tempUpper = 102, tempLower = 95;
+    double tempTolerance = calculateWarningTolerance(tempUpper);
+
+    // Normal
+    assert(checkVital(98, tempLower, tempUpper, tempTolerance) == VitalStatus::NORMAL);
+
+    // Warning low
+    assert(checkVital(95 + tempTolerance, tempLower, tempUpper, tempTolerance) == VitalStatus::WARNING);
+
+    // Warning high
+    assert(checkVital(102 - tempTolerance, tempLower, tempUpper, tempTolerance) == VitalStatus::WARNING);
+
+    // Alert low
+    assert(checkVital(94, tempLower, tempUpper, tempTolerance) == VitalStatus::ALERT);
+
+    // Alert high
+    assert(checkVital(103, tempLower, tempUpper, tempTolerance) == VitalStatus::ALERT);
+
+    // Pulse rate tests
+    double pulseUpper = 100, pulseLower = 60;
+    double pulseTolerance = calculateWarningTolerance(pulseUpper);
+
+    assert(checkVital(80, pulseLower, pulseUpper, pulseTolerance) == VitalStatus::NORMAL);
+    assert(checkVital(60 + pulseTolerance, pulseLower, pulseUpper, pulseTolerance) == VitalStatus::WARNING);
+    assert(checkVital(100 - pulseTolerance, pulseLower, pulseUpper, pulseTolerance) == VitalStatus::WARNING);
+    assert(checkVital(59, pulseLower, pulseUpper, pulseTolerance) == VitalStatus::ALERT);
+    assert(checkVital(101, pulseLower, pulseUpper, pulseTolerance) == VitalStatus::ALERT);
+
+    // SpO2 tests
+    double spo2Upper = 100, spo2Lower = 90;
+    double spo2Tolerance = calculateWarningTolerance(spo2Upper);
+
+    assert(checkVital(95, spo2Lower, spo2Upper, spo2Tolerance) == VitalStatus::NORMAL);
+    assert(checkVital(90 + spo2Tolerance, spo2Lower, spo2Upper, spo2Tolerance) == VitalStatus::WARNING);
+    assert(checkVital(100 - spo2Tolerance, spo2Lower, spo2Upper, spo2Tolerance) == VitalStatus::WARNING);
+    assert(checkVital(89, spo2Lower, spo2Upper, spo2Tolerance) == VitalStatus::ALERT);
+    assert(checkVital(101, spo2Lower, spo2Upper, spo2Tolerance) == VitalStatus::ALERT);
+
+    std::cout << "All tests passed successfully!\n";
 }
 
-// -------------------- Normal Vitals --------------------
-TEST(Monitor, AllVitalsNormal) {
-    ASSERT_TRUE(vitalsOk(makeVitals(98.6f, 72.0f, 98.0f)));
+int main() {
+    testVitals();
+    return 0;
 }
-
-// -------------------- Abnormal Vitals --------------------
-struct AbnormalCase { float temp, pulse, spo2; };
-class MonitorAbnormalTest : public ::testing::TestWithParam<AbnormalCase> {};
-
-TEST_P(MonitorAbnormalTest, DetectsOutOfRange) {
-    const AbnormalCase c = GetParam();
-    ASSERT_FALSE(vitalsOk(makeVitals(c.temp, c.pulse, c.spo2)));
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    AbnormalCases, MonitorAbnormalTest,
-    ::testing::Values(
-        AbnormalCase{104.0f, 72.0f, 98.0f},
-        AbnormalCase{94.0f, 72.0f, 98.0f},
-        AbnormalCase{98.6f, 120.0f, 98.0f},
-        AbnormalCase{98.6f, 50.0f, 98.0f},
-        AbnormalCase{98.6f, 72.0f, 85.0f},
-        AbnormalCase{104.0f, 120.0f, 85.0f}
-    )
-);
-
-// -------------------- Warning Vitals --------------------
-struct WarningCase { float temp, pulse, spo2; };
-class MonitorWarningTest : public ::testing::TestWithParam<WarningCase> {};
-
-TEST_P(MonitorWarningTest, DetectsWarningRanges) {
-    const WarningCase c = GetParam();
-    ASSERT_TRUE(vitalsOk(makeVitals(c.temp, c.pulse, c.spo2)));
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    WarningCases, MonitorWarningTest,
-    ::testing::Values(
-        WarningCase{95.5f, 72.0f, 98.0f},
-        WarningCase{100.5f, 72.0f, 98.0f},
-        WarningCase{98.6f, 61.0f, 98.0f},
-        WarningCase{98.6f, 99.0f, 98.0f},
-        WarningCase{98.6f, 72.0f, 90.5f},
-        WarningCase{98.6f, 72.0f, 100.0f}
-    )
-);
