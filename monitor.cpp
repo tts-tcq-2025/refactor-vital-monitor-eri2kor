@@ -2,7 +2,6 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
-using std::cout, std::flush, std::this_thread::sleep_for, std::chrono::seconds;
 
 BreachType checkLimit(float value, const Limit& limit) {
     if (value < limit.min) return BreachType::LOW;
@@ -12,34 +11,37 @@ BreachType checkLimit(float value, const Limit& limit) {
 
 std::string breachToString(BreachType breach) {
     switch (breach) {
-        case BreachType::LOW: return "LOW";
+        case BreachType::LOW:  return "LOW";
         case BreachType::HIGH: return "HIGH";
-        default: return "NORMAL";
+        default:               return "NORMAL";
     }
 }
 
-void blinkPattern(int cycles = 6, int delaySec = 1) {
+static void blinkPattern(int cycles = 6, int delaySec = 1) {
+    using namespace std::chrono;
+    using namespace std::this_thread;
+
     for (int i = 0; i < cycles; i++) {
-        cout << "\r* " << flush;
+        std::cout << "\r* " << std::flush;
         sleep_for(seconds(delaySec));
-        cout << "\r *" << flush;
+        std::cout << "\r *" << std::flush;
         sleep_for(seconds(delaySec));
     }
 }
 
-void alert(const Vital& v, BreachType breach) {
-    cout << v.name << " is " << breachToString(breach) << "!\n";
+static void alert(const Vital& v, BreachType breach) {
+    std::cout << v.name << " is " << breachToString(breach) << "!\n";
     blinkPattern();
 }
 
 int vitalsOk(const std::vector<Vital>& vitals) {
-    bool status = true;
+    bool allOk = true;
     for (const auto& v : vitals) {
         BreachType breach = checkLimit(v.value, v.limit);
         if (breach != BreachType::NORMAL) {
             alert(v, breach);
-            status = false;
+            allOk = false;
         }
     }
-    return status ? 1 : 0;
+    return allOk ? 1 : 0;
 }
