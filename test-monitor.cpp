@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include "./monitor.h"
 
-// Helper to build vitals vector
+// Helper: create vitals vector
 std::vector<Vital> makeVitals(float temp, float pulse, float spo2) {
     return {
         {"Temperature", temp, {95, 102}},
@@ -10,15 +10,13 @@ std::vector<Vital> makeVitals(float temp, float pulse, float spo2) {
     };
 }
 
+// Test normal vitals
 TEST(Monitor, AllVitalsNormal) {
     ASSERT_TRUE(vitalsOk(makeVitals(98.6, 72, 98)));
 }
 
-// Table-driven abnormal cases
-struct AbnormalCase {
-    float temp, pulse, spo2;
-};
-
+// Table-driven abnormal vitals
+struct AbnormalCase { float temp, pulse, spo2; };
 class MonitorAbnormalTest : public ::testing::TestWithParam<AbnormalCase> {};
 
 TEST_P(MonitorAbnormalTest, DetectsOutOfRange) {
@@ -26,6 +24,7 @@ TEST_P(MonitorAbnormalTest, DetectsOutOfRange) {
     ASSERT_FALSE(vitalsOk(makeVitals(c.temp, c.pulse, c.spo2)));
 }
 
+// Instantiate all abnormal scenarios
 INSTANTIATE_TEST_SUITE_P(
     AbnormalCases, MonitorAbnormalTest,
     ::testing::Values(
