@@ -2,7 +2,7 @@
 #include "monitor.h"
 
 // -------------------- Helpers --------------------
-std::vector<Vital> makeVitals(float temp, float pulse, float spo2) {
+std::vector<Vital> makeVitals(const float temp, const float pulse, const float spo2) {
     return {
         {"Temperature", temp, {95.0f, 102.0f}},
         {"Pulse Rate", pulse, {60.0f, 100.0f}},
@@ -15,12 +15,12 @@ TEST(Monitor, AllVitalsNormal) {
     ASSERT_TRUE(vitalsOk(makeVitals(98.6f, 72.0f, 98.0f)));
 }
 
-// -------------------- Abnormal Vitals (Alarms) --------------------
+// -------------------- Abnormal Vitals --------------------
 struct AbnormalCase { float temp, pulse, spo2; };
 class MonitorAbnormalTest : public ::testing::TestWithParam<AbnormalCase> {};
 
 TEST_P(MonitorAbnormalTest, DetectsOutOfRange) {
-    const auto c = GetParam();
+    const AbnormalCase c = GetParam();
     ASSERT_FALSE(vitalsOk(makeVitals(c.temp, c.pulse, c.spo2)));
 }
 
@@ -41,7 +41,7 @@ struct WarningCase { float temp, pulse, spo2; };
 class MonitorWarningTest : public ::testing::TestWithParam<WarningCase> {};
 
 TEST_P(MonitorWarningTest, DetectsWarningRanges) {
-    const auto c = GetParam();
+    const WarningCase c = GetParam();
     ASSERT_TRUE(vitalsOk(makeVitals(c.temp, c.pulse, c.spo2)));
 }
 
