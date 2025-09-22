@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 
+// -------------------- Data Types --------------------
 enum class BreachType { LOW, HIGH, NORMAL, WARNING_LOW, WARNING_HIGH };
 
 struct Limit {
@@ -15,12 +16,17 @@ struct Vital {
     Limit limit{};
 };
 
-// Pure functions
+// -------------------- Pure Functions --------------------
+// Check vital against limit and warning tolerance
 BreachType checkLimitWithWarning(float value, const Limit& limit, float tolerance = 0.015f);
+
+// Convert BreachType enum to human-readable string
 std::string breachToString(BreachType breach);
 
-// Alert/I/O
+// -------------------- I/O Functions --------------------
+// Handle alert printing and blinking
 void handleAlert(const Vital& v, BreachType breach);
 
-// Monitoring function
+// -------------------- Monitoring --------------------
+// Returns 1 if all vitals are normal/warning, 0 if any LOW/HIGH
 int vitalsOk(const std::vector<Vital>& vitals);
