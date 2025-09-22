@@ -10,7 +10,7 @@ struct VitalSign {
     double upperLimit;
 };
 
-enum class VitalStatus { NORMAL, WARNING, ALERT };
+enum class VitalStatus { NORMAL, WARNING_LOW, WARNING_HIGH, ALERT_LOW, ALERT_HIGH };
 
 // Pure functions
 VitalStatus checkVital(double value, double lower, double upper, double warningTolerance);
