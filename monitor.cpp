@@ -1,22 +1,17 @@
 #include "monitor.h"
 #include <iostream>
-#include <algorithm> // std::clamp
+#include <algorithm>
 
-// Branchless status calculation
+// Corrected logic: simplified and safe
 VitalStatus checkVital(double value, double lower, double upper, double warningTolerance) {
-    double lowWarningThreshold = lower + warningTolerance;
-    double highWarningThreshold = upper - warningTolerance;
+    double lowWarning = lower + warningTolerance;
+    double highWarning = upper - warningTolerance;
 
-    int isLowAlert    = static_cast<int>(value < lower);
-    int isHighAlert   = static_cast<int>(value > upper);
-    int isLowWarning  = static_cast<int>(value >= lower && value < lowWarningThreshold);
-    int isHighWarning = static_cast<int>(value > highWarningThreshold && value <= upper);
-
-    // Index: 0=ALERT_LOW, 1=WARNING_LOW, 2=NORMAL, 3=WARNING_HIGH, 4=ALERT_HIGH
-    int index = 2 - isLowAlert + isHighAlert * 2 - isLowWarning + isHighWarning;
-    index = std::clamp(index, 0, 4);
-
-    return static_cast<VitalStatus>(index);
+    if (value < lower) return VitalStatus::ALERT_LOW;
+    if (value < lowWarning) return VitalStatus::WARNING_LOW;
+    if (value <= highWarning) return VitalStatus::NORMAL;
+    if (value <= upper) return VitalStatus::WARNING_HIGH;
+    return VitalStatus::ALERT_HIGH;
 }
 
 double calculateWarningTolerance(double upper) {
