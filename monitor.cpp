@@ -1,14 +1,32 @@
 #include "monitor.h"
 #include <iostream>
 
+// Zero complexity logic using arithmetic comparison
 VitalStatus checkVital(double value, double lower, double upper, double warningTolerance) {
-    if (value < lower || value > upper) {
-        return VitalStatus::ALERT;
-    }
-    if (value <= lower + warningTolerance || value >= upper - warningTolerance) {
-        return VitalStatus::WARNING;
-    }
-    return VitalStatus::NORMAL;
+    double lowWarningThreshold = lower + warningTolerance;
+    double highWarningThreshold = upper - warningTolerance;
+
+    // Map value to status without branching
+    VitalStatus statuses[] = {
+        VitalStatus::ALERT_LOW,     // value < lower
+        VitalStatus::WARNING_LOW,   // lower <= value < lowWarningThreshold
+        VitalStatus::NORMAL,        // lowWarningThreshold <= value <= highWarningThreshold
+        VitalStatus::WARNING_HIGH,  // highWarningThreshold < value <= upper
+        VitalStatus::ALERT_HIGH     // value > upper
+    };
+
+    // Compute index (0-4) without branching
+    int index = 2 // assume NORMAL
+        - (value < lower) 
+        + (value > upper) * 2
+        - (value >= lower && value < lowWarningThreshold)
+        + (value > highWarningThreshold && value <= upper);
+
+    // clamp index to [0,4]
+    if (index < 0) index = 0;
+    if (index > 4) index = 4;
+
+    return statuses[index];
 }
 
 double calculateWarningTolerance(double upper) {
@@ -16,23 +34,13 @@ double calculateWarningTolerance(double upper) {
 }
 
 void displayStatus(const VitalSign& vital, VitalStatus status) {
-    switch(status) {
-        case VitalStatus::NORMAL:
-            std::cout << vital.name << ": " << vital.value << " (Normal)\n";
-            break;
-        case VitalStatus::WARNING:
-            if (vital.value < vital.lowerLimit + calculateWarningTolerance(vital.upperLimit)) {
-                std::cout << vital.name << ": " << vital.value << " - Warning: Approaching low limit\n";
-            } else {
-                std::cout << vital.name << ": " << vital.value << " - Warning: Approaching high limit\n";
-            }
-            break;
-        case VitalStatus::ALERT:
-            if (vital.value < vital.lowerLimit) {
-                std::cout << vital.name << ": " << vital.value << " - ALERT: Below safe limit!\n";
-            } else {
-                std::cout << vital.name << ": " << vital.value << " - ALERT: Above safe limit!\n";
-            }
-            break;
-    }
+    static const char* messages[] = {
+        "ALERT: Below safe limit!",
+        "Warning: Approaching low limit",
+        "Normal",
+        "Warning: Approaching high limit",
+        "ALERT: Above safe limit!"
+    };
+
+    std::cout << vital.name << ": " << vital.value << " - " << messages[static_cast<int>(status)] << "\n";
 }
