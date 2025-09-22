@@ -9,7 +9,7 @@ namespace {
 constexpr float DEFAULT_WARNING_TOLERANCE = 0.015f;
 
 // -------------------- Blink Helper --------------------
-void blinkPattern(int cycles = 6, int delaySec = 1) {
+void blinkPattern(const int cycles = 6, const int delaySec = 1) {
     using namespace std::chrono_literals;
     for (int i = 0; i < cycles; ++i) {
         std::cout << "\r* " << std::flush;
@@ -22,7 +22,7 @@ void blinkPattern(int cycles = 6, int delaySec = 1) {
 } // namespace
 
 // -------------------- Pure Functions --------------------
-BreachType checkLimitWithWarning(float value, const Limit& limit, float tolerance) {
+BreachType checkLimitWithWarning(const float value, const Limit& limit, const float tolerance) {
     const float tol = limit.max * tolerance;
 
     return (value < limit.min) ? BreachType::LOW :
@@ -32,7 +32,7 @@ BreachType checkLimitWithWarning(float value, const Limit& limit, float toleranc
            BreachType::NORMAL;
 }
 
-std::string breachToString(BreachType breach) {
+std::string breachToString(const BreachType breach) {
     switch (breach) {
         case BreachType::LOW: return "LOW";
         case BreachType::HIGH: return "HIGH";
@@ -43,18 +43,21 @@ std::string breachToString(BreachType breach) {
 }
 
 // -------------------- I/O Functions --------------------
-void handleAlert(const Vital& v, BreachType breach) {
+void handleAlert(const Vital& v, const BreachType breach) {
     std::cout << v.name << " is " << breachToString(breach) << "!\n";
-    if (breach == BreachType::LOW || breach == BreachType::HIGH)
+    if (breach == BreachType::LOW || breach == BreachType::HIGH) {
         blinkPattern();
+    }
 }
 
 // -------------------- Monitoring --------------------
 int vitalsOk(const std::vector<Vital>& vitals) {
     int allOk = 1;
     for (const auto& v : vitals) {
-        const auto breach = checkLimitWithWarning(v.value, v.limit, DEFAULT_WARNING_TOLERANCE);
-        if (breach != BreachType::NORMAL) handleAlert(v, breach);
+        const BreachType breach = checkLimitWithWarning(v.value, v.limit, DEFAULT_WARNING_TOLERANCE);
+        if (breach != BreachType::NORMAL) {
+            handleAlert(v, breach);
+        }
         const int fail = static_cast<int>(breach == BreachType::LOW || breach == BreachType::HIGH);
         allOk &= (1 - fail);
     }
