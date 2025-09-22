@@ -52,14 +52,14 @@ void handleAlert(const Vital& v, const BreachType breach) {
 
 // -------------------- Monitoring --------------------
 int vitalsOk(const std::vector<Vital>& vitals) {
-    int allOk = 1;
+    int status = 1;
     for (const auto& v : vitals) {
         const BreachType breach = checkLimitWithWarning(v.value, v.limit, DEFAULT_WARNING_TOLERANCE);
         if (breach != BreachType::NORMAL) {
             handleAlert(v, breach);
         }
         const int fail = static_cast<int>(breach == BreachType::LOW || breach == BreachType::HIGH);
-        allOk &= (1 - fail);
+        status &= (1 - fail);
     }
-    return allOk;
+    return status;
 }
