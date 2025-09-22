@@ -18,9 +18,9 @@ struct Vital {
 
 // -------------------- Pure Functions --------------------
 // Check vital against limit and warning tolerance
-BreachType checkLimitWithWarning(const float value, const Limit& limit, float tolerance = 0.015f);
+BreachType checkLimitWithWarning(const float value, const Limit& limit, const float tolerance = 0.015f);
 
-// Convert BreachType enum to human-readable string
+// Convert BreachType enum to string
 std::string breachToString(const BreachType breach);
 
 // -------------------- I/O Functions --------------------
