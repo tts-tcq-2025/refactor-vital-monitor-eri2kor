@@ -1,65 +1,38 @@
 #include "monitor.h"
 #include <iostream>
-#include <thread>
-#include <chrono>
 
-namespace {
-
-// -------------------- Constants --------------------
-constexpr float DEFAULT_WARNING_TOLERANCE = 0.015f;
-
-// -------------------- Blink Helper --------------------
-void blinkPattern(const int cycles = 6, const int delaySec = 1) {
-    using namespace std::chrono_literals;
-    for (int i = 0; i < cycles; ++i) {
-        std::cout << "\r* " << std::flush;
-        std::this_thread::sleep_for(std::chrono::seconds(delaySec));
-        std::cout << "\r *" << std::flush;
-        std::this_thread::sleep_for(std::chrono::seconds(delaySec));
+VitalStatus checkVital(double value, double lower, double upper, double warningTolerance) {
+    if (value < lower || value > upper) {
+        return VitalStatus::ALERT;
     }
+    if (value <= lower + warningTolerance || value >= upper - warningTolerance) {
+        return VitalStatus::WARNING;
+    }
+    return VitalStatus::NORMAL;
 }
 
-} // namespace
-
-// -------------------- Pure Functions --------------------
-BreachType checkLimitWithWarning(const float value, const Limit& limit, const float tolerance) {
-    const float tol = limit.max * tolerance;
-
-    return (value < limit.min) ? BreachType::LOW :
-           (value > limit.max) ? BreachType::HIGH :
-           (value <= limit.min + tol) ? BreachType::WARNING_LOW :
-           (value >= limit.max - tol) ? BreachType::WARNING_HIGH :
-           BreachType::NORMAL;
+double calculateWarningTolerance(double upper) {
+    return upper * 0.015;
 }
 
-std::string breachToString(const BreachType breach) {
-    switch (breach) {
-        case BreachType::LOW: return "LOW";
-        case BreachType::HIGH: return "HIGH";
-        case BreachType::WARNING_LOW: return "WARNING_LOW";
-        case BreachType::WARNING_HIGH: return "WARNING_HIGH";
-        default: return "NORMAL";
+void displayStatus(const VitalSign& vital, VitalStatus status) {
+    switch(status) {
+        case VitalStatus::NORMAL:
+            std::cout << vital.name << ": " << vital.value << " (Normal)\n";
+            break;
+        case VitalStatus::WARNING:
+            if (vital.value < vital.lowerLimit + calculateWarningTolerance(vital.upperLimit)) {
+                std::cout << vital.name << ": " << vital.value << " - Warning: Approaching low limit\n";
+            } else {
+                std::cout << vital.name << ": " << vital.value << " - Warning: Approaching high limit\n";
+            }
+            break;
+        case VitalStatus::ALERT:
+            if (vital.value < vital.lowerLimit) {
+                std::cout << vital.name << ": " << vital.value << " - ALERT: Below safe limit!\n";
+            } else {
+                std::cout << vital.name << ": " << vital.value << " - ALERT: Above safe limit!\n";
+            }
+            break;
     }
-}
-
-// -------------------- I/O Functions --------------------
-void handleAlert(const Vital& v, const BreachType breach) {
-    std::cout << v.name << " is " << breachToString(breach) << "!\n";
-    if (breach == BreachType::LOW || breach == BreachType::HIGH) {
-        blinkPattern();
-    }
-}
-
-// -------------------- Monitoring --------------------
-int vitalsOk(const std::vector<Vital>& vitals) {
-    int status = 1;
-    for (const auto& v : vitals) {
-        const BreachType breach = checkLimitWithWarning(v.value, v.limit, DEFAULT_WARNING_TOLERANCE);
-        if (breach != BreachType::NORMAL) {
-            handleAlert(v, breach);
-        }
-        const int fail = static_cast<int>(breach == BreachType::LOW || breach == BreachType::HIGH);
-        status &= (1 - fail);
-    }
-    return status;
 }
